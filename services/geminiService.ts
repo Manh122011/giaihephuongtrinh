@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { HistoryItem } from '../types';
 
@@ -37,5 +36,38 @@ export const generatePerformanceReport = async (history: HistoryItem[]): Promise
   } catch (error) {
     console.error("Error generating report:", error);
     return "Sorry, there was an error generating your report. Please try again later.";
+  }
+};
+
+export const getGeminiFeedbackForNotes = async (notes: string): Promise<string> => {
+  if (!process.env.API_KEY) {
+    return "API Key not configured. Please set the API_KEY environment variable.";
+  }
+
+  if (!notes.trim()) {
+    return "Your notepad is empty. Write something first!";
+  }
+
+  const prompt = `
+    You are a friendly and encouraging math tutor. The user has written the following in their notepad. 
+    Please analyze their notes and provide a helpful and concise response. 
+    You might be asked to check their work, solve a problem, explain a concept, or something else related to math.
+    Keep your response helpful and easy to understand.
+
+    Here are the user's notes:
+    ---
+    ${notes}
+    ---
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Error generating feedback for notes:", error);
+    return "Sorry, there was an error getting feedback from Gemini. Please try again later.";
   }
 };
